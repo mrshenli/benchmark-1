@@ -27,13 +27,17 @@ def is_torchvision_model(model: 'torchbenchmark.util.model.BenchmarkModel') -> b
 def is_hf_model(model: 'torchbenchmark.util.model.BenchmarkModel') -> bool:
     return hasattr(model, 'HF_MODEL') and model.HF_MODEL
 
+def is_fambench_model(model: 'torchbenchmark.util.model.BenchmarkModel') -> bool:
+    return hasattr(model, 'FAMBENCH_MODEL') and model.FAMBENCH_MODEL
+
 def get_hf_maxlength(model: 'torchbenchmark.util.model.BenchmarkModel') -> Optional[int]:
     return model.max_length if is_hf_model(model) else None
 
 def check_fp16(model: 'torchbenchmark.util.model.BenchmarkModel', fp16: str) -> bool:
     if fp16 == "half":
-        return (is_torchvision_model(model) or is_hf_model(model) or is_timm_model(model)) and model.test == 'eval' and model.device == 'cuda'
-    if fp16 == "amp":
+        return (is_torchvision_model(model) or is_hf_model(model) or is_timm_model(model) or is_fambench_model(model)) \
+                and model.test == 'eval' and model.device == 'cuda'
+    elif fp16 == "amp":
         is_cuda_eval_test = (model.test == 'eval' and model.device == 'cuda')
         support_amp = hasattr(model, "enable_amp")
         return is_cuda_eval_test or support_amp
