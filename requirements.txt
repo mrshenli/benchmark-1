@@ -1,4 +1,8 @@
+accelerate
 bs4
+datasets
+scipy
+sklearn
 patch
 py-cpuinfo
 distro
@@ -14,3 +18,4 @@ MonkeyType
 psutil
 pyyaml
 numpy
+submitit
