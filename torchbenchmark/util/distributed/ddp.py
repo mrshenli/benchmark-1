@@ -43,7 +43,8 @@ class DDPTrainer(Trainer):
             self.model,
             # After setting CUDA_VISIBLE_DEVICES to a single device, each
             # process only sees cuda:0
-            device_ids=[0],
+            # TODO!!!! Change this to local rank!!!
+            device_ids=[self.rank],
             # If buffer broadcast is necessary, specific optimizations might be
             # necessary to optimize performance. Disable it by default.
             broadcast_buffers=False,
@@ -57,6 +58,7 @@ class DDPTrainer(Trainer):
         # TODO: using dummy data for now to rule out dataloader delays
         batch = next(iter(self.dataloader))
 
+        print("warming up")
         ######################################
         # 1. warming up CUDACachingAllocator #
         ######################################
@@ -70,6 +72,7 @@ class DDPTrainer(Trainer):
 
         now = datetime.now()
         name = f"ddp_{now.strftime('%Y_%m_%d_%H_%M_%S')}"
+        print("measure without profiler")
         ##################################################################
         # 2. measure raw delays and memory to rule out profiler overhead #
         ##################################################################
@@ -113,6 +116,7 @@ class DDPTrainer(Trainer):
         )
         fout.close()
 
+        print("measure with profiler")
         ################################################
         # 3. meausre complete metrics through profiler #
         ################################################
@@ -135,7 +139,9 @@ class DDPTrainer(Trainer):
         # wait for all pending CUDA ops to finish
         torch.cuda.synchronize(device=self.local_rank)
 
-        dist.barrier()
+        print("barrier ", self.rank, torch.cuda.device_count())
+        dist.barrier(device_ids=[self.rank])
+        print("done")
 
 
 def test():

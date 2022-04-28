@@ -1,5 +1,6 @@
 import os
 
+import torch
 import torch.distributed as dist
 
 
@@ -25,6 +26,7 @@ class Trainer():
                 f"{torch.cuda.device_count()} devices."
             )
             """
+            torch.cuda.set_device(local_rank)
 
             world_size = int(os.getenv("WORLD_SIZE", -1))
             rank = int(os.getenv("RANK", -1))
@@ -39,6 +41,7 @@ class Trainer():
             # TODO: hardcode NCCL for now, make this configurable if necessary
             print("====== init pg")
             dist.init_process_group("nccl", init_method=self.args.dist_url, rank=rank, world_size=world_size)
+            print("====== done init pg")
         else:
             raise ValueError(f"Unrecognized distributed training mode {self.mode}")
 
